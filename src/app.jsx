@@ -1,10 +1,23 @@
-const { useState, useMemo, useEffect } = React;
+import { useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = "stk-expenses-v1";
 
+const TABS = [
+  { id: "overview", label: "Tổng quan" },
+  { id: "transactions", label: "Giao dịch" },
+  { id: "reports", label: "Báo cáo" },
+];
+
+function createId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 const SAMPLE_EXPENSES = [
   {
-    id: crypto.randomUUID(),
+    id: createId(),
     description: "Cà phê sáng",
     amount: 45000,
     date: new Date().toISOString().slice(0, 10),
@@ -12,7 +25,7 @@ const SAMPLE_EXPENSES = [
     note: "Latte ở quán quen",
   },
   {
-    id: crypto.randomUUID(),
+    id: createId(),
     description: "Ăn trưa",
     amount: 95000,
     date: new Date().toISOString().slice(0, 10),
@@ -20,7 +33,7 @@ const SAMPLE_EXPENSES = [
     note: "Cơm văn phòng",
   },
   {
-    id: crypto.randomUUID(),
+    id: createId(),
     description: "Grab đi làm",
     amount: 68000,
     date: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
@@ -37,11 +50,44 @@ const CATEGORY_KEYWORDS = [
   { category: "Giải trí", patterns: ["xem phim", "netflix", "game", "nhạc"] },
 ];
 
+function loadInitialExpenses() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.warn("Không thể đọc dữ liệu đã lưu", error);
+  }
+  return SAMPLE_EXPENSES;
+}
+
+function getDefaultFormState() {
+  return {
+    date: new Date().toISOString().slice(0, 10),
+    description: "",
+    amount: "",
+    note: "",
+    quickEntry: "",
+  };
+}
+
 function formatCurrency(amount) {
   return amount.toLocaleString("vi-VN", {
     style: "currency",
     currency: "VND",
     maximumFractionDigits: 0,
+  });
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
@@ -133,7 +179,6 @@ function generateInsights(expenses) {
     lastTwoMonths.reduce((sum, month) => sum + month.total, 0) /
     Math.max(lastTwoMonths.length, 1);
 
-  // simple streak: count days with spending in a row up to today
   const today = new Date().toISOString().slice(0, 10);
   let streak = 0;
   const expenseByDate = expenses.reduce((acc, expense) => {
@@ -156,28 +201,11 @@ function generateInsights(expenses) {
 }
 
 function App() {
-  const [expenses, setExpenses] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
-      }
-    } catch (error) {
-      console.warn("Không thể đọc dữ liệu đã lưu", error);
-    }
-    return SAMPLE_EXPENSES;
-  });
-
-  const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    description: "",
-    amount: "",
-    note: "",
-    quickEntry: "",
-  });
+  const [expenses, setExpenses] = useState(loadInitialExpenses);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(getDefaultFormState);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
@@ -195,7 +223,31 @@ function App() {
 
   const insights = useMemo(() => generateInsights(expenses), [expenses]);
 
-  function handleChange(event) {
+  const categoryBreakdown = useMemo(() => {
+    const totals = expenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {});
+
+    return Object.entries(totals)
+      .map(([category, amount]) => ({ category, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [expenses]);
+
+  const recentExpenses = useMemo(() => expenses.slice(0, 5), [expenses]);
+
+  function openModal() {
+    setForm(getDefaultFormState());
+    setFormError("");
+    setModalOpen(true);
+  }
+
+  function closeModal() {
+    setModalOpen(false);
+    setFormError("");
+  }
+
+  function handleFormChange(event) {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
@@ -215,7 +267,7 @@ function App() {
     }
 
     if (!payload || !payload.amount) {
-      alert("Vui lòng nhập số tiền hợp lệ");
+      setFormError("Vui lòng nhập số tiền hợp lệ");
       return;
     }
 
@@ -223,7 +275,7 @@ function App() {
     const category = inferCategory(payload.description);
 
     const newExpense = {
-      id: crypto.randomUUID(),
+      id: createId(),
       description: payload.description,
       amount: payload.amount,
       date,
@@ -232,13 +284,10 @@ function App() {
     };
 
     setExpenses((prev) => [newExpense, ...prev]);
-    setForm((prev) => ({
-      ...prev,
-      description: "",
-      amount: "",
-      note: "",
-      quickEntry: "",
-    }));
+    setForm(getDefaultFormState());
+    setFormError("");
+    setModalOpen(false);
+    setActiveTab("transactions");
   }
 
   function handleDelete(id) {
@@ -246,143 +295,95 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <h1>Trợ lý quản lý chi tiêu</h1>
+    <div className="app-shell">
+      <header className="app-header">
+        <div>
+          <h1>Trợ lý chi tiêu</h1>
+          <p>Ghi chép nhẹ nhàng, theo dõi rõ ràng mỗi ngày.</p>
+        </div>
+        <button type="button" className="primary-button" onClick={openModal}>
+          + Ghi nhận
+        </button>
+      </header>
 
-      <section className="card">
-        <h2>Thêm chi tiêu mới</h2>
-        <form onSubmit={handleSubmit} className="form-grid">
-          <div>
-            <label htmlFor="date">Ngày</label>
-            <input
-              id="date"
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={handleChange}
-              required
-            />
-          </div>
+      <nav className="tab-bar">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`tab-button${activeTab === tab.id ? " is-active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
 
-          <div>
-            <label htmlFor="description">Mô tả</label>
-            <input
-              id="description"
-              name="description"
-              placeholder="Ví dụ: Ăn trưa"
-              value={form.description}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="amount">Số tiền (VND)</label>
-            <input
-              id="amount"
-              name="amount"
-              placeholder="Ví dụ: 120000"
-              value={form.amount}
-              onChange={handleChange}
-              inputMode="numeric"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="note">Ghi chú</label>
-            <textarea
-              id="note"
-              name="note"
-              placeholder="Tùy chọn"
-              value={form.note}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div style={{ gridColumn: "1 / -1" }}>
-            <label htmlFor="quickEntry">Nhập nhanh (ngôn ngữ tự nhiên)</label>
-            <textarea
-              id="quickEntry"
-              name="quickEntry"
-              placeholder="Ví dụ: Hôm nay mua cà phê 50k, ăn trưa 100k"
-              value={form.quickEntry}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div style={{ gridColumn: "1 / -1" }}>
-            <button type="submit">Lưu chi tiêu</button>
-          </div>
-        </form>
-      </section>
-
-      <section className="card">
-        <h2>Tổng quan</h2>
-        <p>
-          <span className="badge">Tổng chi tiêu</span> {formatCurrency(total)}
-        </p>
-        <p>
-          Trung bình mỗi ngày: {formatCurrency(Math.round(insights.averageDaily || 0))}
-        </p>
-        {insights.topCategory ? (
-          <p>
-            Hạng mục chi nhiều nhất: <strong>{insights.topCategory.name}</strong> ({formatCurrency(insights.topCategory.total)})
-          </p>
-        ) : (
-          <p className="empty-state">Chưa có dữ liệu đủ để phân tích</p>
+      <main className="app-body">
+        {activeTab === "overview" && (
+          <OverviewPanel
+            total={total}
+            insights={insights}
+            categoryBreakdown={categoryBreakdown}
+            recentExpenses={recentExpenses}
+            onDelete={handleDelete}
+          />
         )}
-        <p>Chuỗi ngày chi tiêu liên tiếp: {insights.streak} ngày</p>
-      </section>
 
+        {activeTab === "transactions" && (
+          <TransactionsPanel expenses={expenses} onDelete={handleDelete} />
+        )}
+
+        {activeTab === "reports" && <ReportsPanel monthlyReport={monthlyReport} />}
+      </main>
+
+      {isModalOpen && (
+        <ExpenseModal
+          form={form}
+          onChange={handleFormChange}
+          onSubmit={handleSubmit}
+          onClose={closeModal}
+          error={formError}
+        />
+      )}
+    </div>
+  );
+}
+
+function OverviewPanel({ total, insights, categoryBreakdown, recentExpenses, onDelete }) {
+  return (
+    <div className="panel-stack">
       <section className="card">
-        <h2>Danh sách chi tiêu gần đây</h2>
-        {expenses.length === 0 ? (
-          <p className="empty-state">Chưa có chi tiêu nào, hãy thêm ghi nhận đầu tiên!</p>
-        ) : (
-          <div className="expense-list">
-            {expenses.map((expense) => (
-              <article key={expense.id} className="expense-item">
-                <div>
-                  <strong>{expense.description}</strong>
-                  <div className="meta">
-                    {formatCurrency(expense.amount)} · {expense.category}
-                  </div>
-                  <div className="meta">
-                    {new Date(expense.date).toLocaleDateString("vi-VN")}
-                    {expense.note ? ` · ${expense.note}` : ""}
-                  </div>
-                </div>
-                <button type="button" onClick={() => handleDelete(expense.id)}>
-                  Xóa
-                </button>
-              </article>
-            ))}
+        <header className="card-header">
+          <div>
+            <h2>Số liệu nhanh</h2>
+            <p>Điểm qua tình hình chi tiêu nổi bật của bạn.</p>
+          </div>
+        </header>
+        <div className="stat-grid">
+          <StatCard label="Tổng chi tiêu" value={formatCurrency(total)} tone="primary" />
+          <StatCard
+            label="Trung bình mỗi ngày"
+            value={formatCurrency(Math.round(insights.averageDaily || 0))}
+          />
+          <StatCard
+            label="Dự đoán tháng tới"
+            value={formatCurrency(Math.round(insights.predictedNextMonth || 0))}
+          />
+          <StatCard label="Chuỗi ngày chi tiêu" value={`${insights.streak} ngày`} />
+        </div>
+        {insights.topCategory && (
+          <div className="highlight-pill">
+            Chi nhiều nhất: <strong>{insights.topCategory.name}</strong> ·{' '}
+            {formatCurrency(insights.topCategory.total)}
           </div>
         )}
-      </section>
-
-      <section className="card">
-        <h2>Báo cáo theo tháng</h2>
-        {monthlyReport.length === 0 ? (
-          <p className="empty-state">Chưa có dữ liệu để lập báo cáo.</p>
-        ) : (
-          <div className="report-grid">
-            {monthlyReport.map((month) => (
-              <div key={month.month} className="report-card">
-                <h3>
-                  {new Date(month.month + "-01").toLocaleDateString("vi-VN", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </h3>
-                <p>Tổng: {formatCurrency(month.total)}</p>
-                <p>{month.transactions} giao dịch</p>
-                <ul className="analysis-list">
-                  {Object.entries(month.categories).map(([category, value]) => (
-                    <li key={category}>
-                      {category}: {formatCurrency(value)}
-                    </li>
-                  ))}
-                </ul>
+        {categoryBreakdown.length > 0 && (
+          <div className="category-breakdown">
+            {categoryBreakdown.slice(0, 3).map((item) => (
+              <div key={item.category} className="category-chip">
+                <span>{item.category}</span>
+                <strong>{formatCurrency(item.amount)}</strong>
               </div>
             ))}
           </div>
@@ -390,41 +391,212 @@ function App() {
       </section>
 
       <section className="card">
-        <h2>Phân tích nâng cao</h2>
-        <div className="advanced-section">
-          <div className="report-card">
-            <h3>OCR hóa đơn (minh họa)</h3>
-            <p>
-              Tải ảnh hóa đơn và hệ thống sẽ tự động nhận diện số tiền, nhà cung
-              cấp và hạng mục chi tiêu bằng công nghệ OCR. (Tính năng demo: sử
-              dụng ghi chú để mô tả nội dung hóa đơn).
-            </p>
-            <ul className="analysis-list">
-              <li>Nhận diện tổng tiền từ hình ảnh hóa đơn.</li>
-              <li>Gợi ý hạng mục dựa trên tên cửa hàng.</li>
-              <li>Trích xuất ngày giao dịch để lưu tự động.</li>
-            </ul>
+        <header className="card-header">
+          <div>
+            <h2>Ghi nhận gần đây</h2>
+            <p>Cập nhật 5 giao dịch mới nhất.</p>
           </div>
-
-          <div className="report-card">
-            <h3>Dự đoán thói quen chi tiêu</h3>
-            <p>
-              Mô phỏng mô hình học máy: dự đoán chi tiêu tháng tới khoảng
-              {" "}
-              <strong>{formatCurrency(Math.round(insights.predictedNextMonth || 0))}</strong>
-              {" "}
-              dựa trên xu hướng 2 tháng gần nhất.
-            </p>
-            <p>
-              Gợi ý: thiết lập ngân sách theo tuần để kiểm soát dòng tiền tốt
-              hơn và đặt cảnh báo khi vượt ngưỡng.
-            </p>
-          </div>
-        </div>
+        </header>
+        <ExpenseList
+          expenses={recentExpenses}
+          onDelete={onDelete}
+          emptyMessage="Chưa có giao dịch nào, hãy ghi nhận chi tiêu đầu tiên."
+        />
       </section>
     </div>
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+function TransactionsPanel({ expenses, onDelete }) {
+  return (
+    <section className="card">
+      <header className="card-header">
+        <div>
+          <h2>Danh sách giao dịch</h2>
+          <p>Quản lý mọi khoản chi tiêu trong một nơi.</p>
+        </div>
+      </header>
+      <ExpenseList
+        expenses={expenses}
+        onDelete={onDelete}
+        emptyMessage="Chưa có giao dịch nào, hãy nhấn Ghi nhận để thêm."
+      />
+    </section>
+  );
+}
+
+function ReportsPanel({ monthlyReport }) {
+  if (monthlyReport.length === 0) {
+    return (
+      <section className="card">
+        <header className="card-header">
+          <div>
+            <h2>Báo cáo theo tháng</h2>
+            <p>Tổng hợp chi tiêu từng tháng.</p>
+          </div>
+        </header>
+        <EmptyState message="Chưa có dữ liệu để lập báo cáo." />
+      </section>
+    );
+  }
+
+  return (
+    <section className="card">
+      <header className="card-header">
+        <div>
+          <h2>Báo cáo theo tháng</h2>
+          <p>Nhìn lại bức tranh chi tiêu theo từng tháng.</p>
+        </div>
+      </header>
+      <div className="report-grid">
+        {monthlyReport.map((month) => (
+          <div key={month.month} className="report-card">
+            <div className="report-header">
+              {new Date(`${month.month}-01`).toLocaleDateString("vi-VN", {
+                month: "long",
+                year: "numeric",
+              })}
+            </div>
+            <div className="report-total">{formatCurrency(month.total)}</div>
+            <div className="report-meta">{month.transactions} giao dịch</div>
+            <ul className="report-breakdown">
+              {Object.entries(month.categories).map(([category, value]) => (
+                <li key={category}>
+                  <span>{category}</span>
+                  <strong>{formatCurrency(value)}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ExpenseList({ expenses, onDelete, emptyMessage }) {
+  if (expenses.length === 0) {
+    return <EmptyState message={emptyMessage} />;
+  }
+
+  return (
+    <ul className="expense-list">
+      {expenses.map((expense) => (
+        <li key={expense.id} className="expense-row">
+          <div>
+            <p className="expense-title">{expense.description}</p>
+            <p className="expense-meta">
+              {formatDate(expense.date)} · {expense.category}
+            </p>
+            {expense.note && <p className="expense-note">{expense.note}</p>}
+          </div>
+          <div className="expense-actions">
+            <span className="expense-amount">{formatCurrency(expense.amount)}</span>
+            <button type="button" className="ghost-button" onClick={() => onDelete(expense.id)}>
+              Xóa
+            </button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function StatCard({ label, value, tone = "default" }) {
+  return (
+    <div className={`stat-card stat-card--${tone}`}>
+      <span className="stat-label">{label}</span>
+      <span className="stat-value">{value}</span>
+    </div>
+  );
+}
+
+function EmptyState({ message }) {
+  return <p className="empty-state">{message}</p>;
+}
+
+function ExpenseModal({ form, onChange, onSubmit, onClose, error }) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div
+        className="modal-panel"
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        <header className="modal-header">
+          <div>
+            <h2>Ghi nhận chi tiêu</h2>
+            <p>Nhập nhanh vừa đủ, hệ thống lo phần còn lại.</p>
+          </div>
+          <button type="button" className="ghost-button" onClick={onClose} aria-label="Đóng">
+            ×
+          </button>
+        </header>
+
+        <form className="modal-body" onSubmit={onSubmit}>
+          <div className="form-grid">
+            <label className="form-field">
+              <span>Ngày</span>
+              <input name="date" type="date" value={form.date} onChange={onChange} required />
+            </label>
+
+            <label className="form-field">
+              <span>Mô tả</span>
+              <input
+                name="description"
+                placeholder="Ví dụ: Ăn trưa"
+                value={form.description}
+                onChange={onChange}
+              />
+            </label>
+
+            <label className="form-field">
+              <span>Số tiền (VND)</span>
+              <input
+                name="amount"
+                placeholder="Ví dụ: 120000"
+                value={form.amount}
+                onChange={onChange}
+                inputMode="numeric"
+              />
+            </label>
+
+            <label className="form-field">
+              <span>Ghi chú</span>
+              <textarea
+                name="note"
+                placeholder="Tùy chọn"
+                value={form.note}
+                onChange={onChange}
+              />
+            </label>
+          </div>
+
+          <label className="form-field full-width">
+            <span>Nhập nhanh (ví dụ: "mua cà phê 50k")</span>
+            <textarea
+              name="quickEntry"
+              placeholder="Gõ tự nhiên, hệ thống tự nhận diện."
+              value={form.quickEntry}
+              onChange={onChange}
+            />
+          </label>
+
+          {error && <p className="form-error">{error}</p>}
+
+          <div className="modal-actions">
+            <button type="button" className="ghost-button" onClick={onClose}>
+              Hủy
+            </button>
+            <button type="submit" className="primary-button">
+              Lưu chi tiêu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default App;
