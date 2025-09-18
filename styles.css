@@ -1,0 +1,162 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7fb;
+  --card: #ffffffee;
+  --text: #1f2937;
+  --primary: #2563eb;
+  --border: #e5e7eb;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+h1 {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.2);
+}
+
+.expense-list {
+  display: grid;
+  gap: 12px;
+}
+
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 1px dashed #cbd5f5;
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+}
+
+.expense-item strong {
+  display: block;
+  font-size: 16px;
+}
+
+.meta {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.report-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.report-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  background: white;
+}
+
+.report-card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.advanced-section {
+  display: grid;
+  gap: 16px;
+}
+
+.analysis-list {
+  list-style: disc;
+  padding-left: 20px;
+  color: #1d4ed8;
+}
+
+.empty-state {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 18px;
+  }
+}
