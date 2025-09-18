@@ -1,10 +1,11 @@
 # Ứng dụng quản lý chi tiêu đơn giản
 
 Ứng dụng React một trang giúp ghi nhận chi tiêu hằng ngày và tổng hợp báo cáo theo tháng.
+
 Buổi 1 – _"Team dev vừa onboard"_
 ---------------------------------
 
-**Tình huống:**Công ty khởi động dự án quản lý chi tiêu. CTO giao nhiệm vụ:
+**Tình huống:** Công ty khởi động dự án quản lý chi tiêu. CTO giao nhiệm vụ:
 
 *   Setup **10 user IAM** cho team dev, phân quyền theo vai trò (dev, lead).
     
@@ -18,7 +19,7 @@ Buổi 1 – _"Team dev vừa onboard"_
 Buổi 2 – _"DB bị lộ ra internet"_
 ---------------------------------
 
-**Tình huống:**Backend cần database. Một dev tự dựng **RDS MySQL public** để test → sếp phát hiện security risk.
+**Tình huống:** Backend cần database. Một dev tự dựng **RDS MySQL public** để test → sếp phát hiện security risk.
 
 *   CTO yêu cầu: RDS Aurora phải private subnet, scale khi user tăng.
     
@@ -32,7 +33,7 @@ Buổi 2 – _"DB bị lộ ra internet"_
 Buổi 3 – _"Ứng dụng chậm & phí tăng"_
 -------------------------------------
 
-**Tình huống:**Frontend React build xong, host tạm trên EC2 → user than load chậm, cost tăng.
+**Tình huống:** Frontend React build xong, host tạm trên EC2 → user than load chậm, cost tăng.
 
 *   CTO muốn host React trên **S3 + CloudFront** để giảm phí và tăng tốc độ.
     
@@ -44,7 +45,7 @@ Buổi 3 – _"Ứng dụng chậm & phí tăng"_
 Buổi 4 – _"DevOps war: Docker hay Serverless?"_
 -----------------------------------------------
 
-**Tình huống:**Team backend cãi nhau:
+**Tình huống:** Team backend cãi nhau:
 
 *   Nhóm A: “Dùng **ECS Fargate**, dễ deploy microservice.”
     
@@ -58,7 +59,7 @@ Buổi 4 – _"DevOps war: Docker hay Serverless?"_
 Buổi 5 – _"Dev push code lỗi"_
 ------------------------------
 
-**Tình huống:**Một dev push code hỏng → EC2 production crash. CTO mắng: “Tại sao chưa có CI/CD pipeline?”
+**Tình huống:** Một dev push code hỏng → EC2 production crash. CTO mắng: “Tại sao chưa có CI/CD pipeline?”
 
 *   Yêu cầu: Tạo pipeline **CodeCommit → CodeBuild → CodeDeploy → ECS**.
     
@@ -70,7 +71,7 @@ Buổi 5 – _"Dev push code lỗi"_
 Buổi 6 – _"Khách hàng báo app chậm"_
 ------------------------------------
 
-**Tình huống:**User báo app load chậm vào cuối tháng. CTO bảo: “Phải có monitoring và alert.”
+**Tình huống:** User báo app load chậm vào cuối tháng. CTO bảo: “Phải có monitoring và alert.”
 
 *   Thu thập log từ ECS + Lambda.
     
@@ -86,7 +87,7 @@ Buổi 6 – _"Khách hàng báo app chậm"_
 Buổi 7 – _"Audit & Compliance"_
 -------------------------------
 
-**Tình huống:**Công ty chuẩn bị gọi vốn, auditor yêu cầu:
+**Tình huống:** Công ty chuẩn bị gọi vốn, auditor yêu cầu:
 
 *   Mọi secret (DB password) phải lưu trong **Secrets Manager**.
     
@@ -100,7 +101,7 @@ Buổi 7 – _"Audit & Compliance"_
 Buổi 8 – _"Investor Demo Day"_
 ------------------------------
 
-**Tình huống:**Ngày demo cho nhà đầu tư:
+**Tình huống:** Ngày demo cho nhà đầu tư:
 
 *   CTO muốn trình bày toàn kiến trúc hệ thống.
     
