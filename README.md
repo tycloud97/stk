@@ -1,15 +1,10 @@
 # Ứng dụng quản lý chi tiêu đơn giản
 
 Ứng dụng React một trang giúp ghi nhận chi tiêu hằng ngày và tổng hợp báo cáo theo tháng.
-
-
-📅 Chương trình AWS 8 buổi – Phiên bản tình huống thực tế hấp dẫn
-=================================================================
-
 Buổi 1 – _"Team dev vừa onboard"_
 ---------------------------------
 
-**Tình huống:**Công ty khởi động dự án quản lý chi tiêu. CTO giao bạn:
+**Tình huống:**Công ty khởi động dự án quản lý chi tiêu. CTO giao nhiệm vụ:
 
 *   Setup **10 user IAM** cho team dev, phân quyền theo vai trò (dev, lead).
     
@@ -18,7 +13,7 @@ Buổi 1 – _"Team dev vừa onboard"_
 *   Dev than phiền: “cho chúng tôi quyền sudo trên EC2 luôn đi”.
     
 
-👉 Học viên phải quyết định phân quyền hợp lý, tránh sai lầm IAM, đồng thời dựng EC2 với SG hợp lý để dev truy cập.
+👉 Cần quyết định phân quyền hợp lý, tránh sai lầm IAM, đồng thời dựng EC2 với SG phù hợp để team dev có thể truy cập.
 
 Buổi 2 – _"DB bị lộ ra internet"_
 ---------------------------------
@@ -32,7 +27,7 @@ Buổi 2 – _"DB bị lộ ra internet"_
 *   **Route53** cho subdomain api.expense.app.
     
 
-👉 Học viên phải sửa sai của dev, dựng DB trong VPC private, quản lý kết nối an toàn, và giải thích cho team vì sao không expose DB ra ngoài.
+👉 Nhiệm vụ là khắc phục sai lầm của dev, dựng DB trong VPC private, quản lý kết nối an toàn, và giải thích rõ vì sao không được expose DB ra ngoài.
 
 Buổi 3 – _"Ứng dụng chậm & phí tăng"_
 -------------------------------------
@@ -44,7 +39,7 @@ Buổi 3 – _"Ứng dụng chậm & phí tăng"_
 *   Người dùng bắt đầu upload ảnh minh họa cho chi tiêu → cần **S3 bucket với versioning, encryption**.
     
 
-👉 Học viên sẽ deploy React app lên S3 + CloudFront, cấu hình HTTPS bằng ACM, và tối ưu storage lifecycle để tiết kiệm chi phí.
+👉 Giải pháp là deploy React app lên S3 + CloudFront, cấu hình HTTPS bằng ACM, và tối ưu storage lifecycle để tiết kiệm chi phí.
 
 Buổi 4 – _"DevOps war: Docker hay Serverless?"_
 -----------------------------------------------
@@ -58,7 +53,7 @@ Buổi 4 – _"DevOps war: Docker hay Serverless?"_
 *   CTO bảo: “Dựng cả 2 để so sánh.”
     
 
-👉 Học viên sẽ deploy một service backend bằng ECS Fargate + ECR, và một service khác bằng Lambda + API Gateway. So sánh chi phí, scaling, latency.
+👉 Nhiệm vụ là deploy một service backend bằng ECS Fargate + ECR, và một service khác bằng Lambda + API Gateway. Sau đó so sánh chi phí, scaling, latency.
 
 Buổi 5 – _"Dev push code lỗi"_
 ------------------------------
@@ -70,7 +65,7 @@ Buổi 5 – _"Dev push code lỗi"_
 *   Hạ tầng phải IaC (**CloudFormation/CDK**).
     
 
-👉 Học viên sẽ dựng CI/CD pipeline, tự động build & deploy, rollback khi lỗi. Sau đó demo pipeline chạy end-to-end.
+👉 Cần dựng CI/CD pipeline, tự động build & deploy, rollback khi lỗi. Sau đó demo pipeline chạy end-to-end.
 
 Buổi 6 – _"Khách hàng báo app chậm"_
 ------------------------------------
@@ -86,7 +81,7 @@ Buổi 6 – _"Khách hàng báo app chậm"_
 *   Thêm **Cognito** để user có thể login bằng Google.
     
 
-👉 Học viên dựng monitoring thực chiến, tạo alarm → SNS email, và tích hợp login OAuth2.
+👉 Giải pháp là thiết lập monitoring, tạo alarm → SNS email, và tích hợp login OAuth2.
 
 Buổi 7 – _"Audit & Compliance"_
 -------------------------------
@@ -100,7 +95,7 @@ Buổi 7 – _"Audit & Compliance"_
 *   Cấu hình workflow báo cáo tháng bằng **Step Functions**.
     
 
-👉 Học viên chuyển secrets ra khỏi code, cấu hình KMS cho S3 + RDS, và build Step Function pipeline để generate monthly report.
+👉 Nhiệm vụ là đưa secrets ra khỏi code, cấu hình KMS cho S3 + RDS, và xây dựng Step Function pipeline để generate monthly report.
 
 Buổi 8 – _"Investor Demo Day"_
 ------------------------------
@@ -112,111 +107,3 @@ Buổi 8 – _"Investor Demo Day"_
 *   Phải chứng minh hệ thống **scale tốt, bảo mật tốt, cost hợp lý**.
     
 *   CEO bất ngờ hỏi: “Nếu user tăng gấp 10 thì chi phí ra sao?”
-    
-
-👉 Học viên sẽ dựng sơ đồ kiến trúc tổng thể, chạy thử load test, dùng **Cost Explorer** để dự đoán chi phí, và trả lời câu hỏi của nhà đầu tư.
-
-💡 Ý nghĩa
-----------
-
-*   Mỗi buổi = một “drama” mà Cloud Engineer phải xử lý.
-    
-*   Người học thấy ngay ý nghĩa thực tế → không khô khan.
-    
-*   Tất cả dịch vụ AWS đều gắn liền với **ứng dụng chi tiêu**.
-    
-
-🏗️ Kiến trúc hệ thống (Mermaid Diagram)
-========================================
-
-flowchart TB
-    subgraph Client["Người dùng"]
-        browser["React App (Browser)"]
-    end
-
-    subgraph AWS["AWS Cloud"]
-        subgraph Network["Networking & Security"]
-            route53["Route53 (DNS)"]
-            alb["ALB / CloudFront"]
-            vpc["VPC (2 Public + 2 Private Subnets)"]
-        end
-
-        subgraph Frontend["Frontend Hosting"]
-            s3_static["S3 (React App)"]
-            cloudfront["CloudFront CDN + ACM Cert"]
-        end
-
-        subgraph Backend["Backend Services"]
-            ecs["ECS Fargate (API Service)"]
-            lambda["Lambda (Monthly Report)"]
-            apigw["API Gateway"]
-        end
-
-        subgraph Database["Data Layer"]
-            aurora["Aurora MySQL (Chi tiêu)"]
-            redis["ElastiCache Redis (Cache báo cáo)"]
-        end
-
-        subgraph Auth["Authentication"]
-            cognito["Cognito (Login with Google)"]
-        end
-
-        subgraph Monitoring["Monitoring & Events"]
-            cloudwatch["CloudWatch Logs & Metrics"]
-            sns["SNS (Email Alerts)"]
-            eventbridge["EventBridge Rules"]
-        end
-
-        subgraph Secrets["Security"]
-            secrets["Secrets Manager (DB Creds)"]
-            kms["KMS (Data Encryption)"]
-        end
-
-        subgraph CICD["CI/CD Pipeline"]
-            codecommit["CodeCommit (Repo)"]
-            codebuild["CodeBuild"]
-            codedeploy["CodeDeploy"]
-            codepipeline["CodePipeline"]
-        end
-    end
-
-    browser --> route53 --> cloudfront --> s3_static
-    cloudfront --> ecs
-    browser --> apigw --> ecs
-    ecs --> aurora
-    ecs --> redis
-    apigw --> lambda --> aurora
-
-    cognito --> browser
-    cognito --> apigw
-
-    ecs --> cloudwatch
-    lambda --> cloudwatch
-    cloudwatch --> sns
-    eventbridge --> sns
-
-    secrets --> ecs
-    kms --> aurora
-    kms --> s3_static
-
-    codecommit --> codebuild --> codedeploy --> ecs
-    codecommit --> codebuild --> codedeploy --> lambda
-    codepipeline --> codebuild
-
-
-🎯 Tóm tắt kiến trúc
---------------------
-
-*   **Frontend**: React build → S3 → CloudFront phân phối toàn cầu.
-    
-*   **Backend**: ECS Fargate chạy API, Lambda xử lý báo cáo tháng.
-    
-*   **Database**: Aurora MySQL chính, Redis tăng tốc báo cáo.
-    
-*   **Auth**: Cognito cho login bằng Google.
-    
-*   **CI/CD**: Mỗi commit → CodePipeline build & deploy ra ECS/Lambda.
-    
-*   **Monitoring**: CloudWatch theo dõi, SNS gửi cảnh báo email khi vượt ngưỡng.
-    
-*   **Security**: Secrets Manager quản lý DB password, KMS mã hóa dữ liệu.
