@@ -1,126 +1,222 @@
 # Ứng dụng quản lý chi tiêu đơn giản
 
-Ứng dụng React một trang giúp ghi nhận chi tiêu hằng ngày, tổng hợp báo cáo theo tháng và mô phỏng các tính năng phân tích nâng cao như OCR hóa đơn và dự đoán thói quen chi tiêu.
+Ứng dụng React một trang giúp ghi nhận chi tiêu hằng ngày và tổng hợp báo cáo theo tháng.
 
-## Cách sử dụng
 
-1. Mở file `index.html` bằng trình duyệt.
-2. Sử dụng biểu mẫu để nhập chi tiêu mới:
-   - Nhập đầy đủ ngày, mô tả, số tiền và ghi chú (nếu có).
-   - Hoặc sử dụng ô **Nhập nhanh** để dán câu văn tự nhiên, ví dụ: `Hôm nay mua cà phê 50k, ăn trưa 100k`.
-3. Ứng dụng sẽ hiển thị tổng chi tiêu, thống kê theo tháng và các gợi ý nâng cao.
+📅 Chương trình AWS 8 buổi – Phiên bản tình huống thực tế hấp dẫn
+=================================================================
 
-## Tính năng chính
+Buổi 1 – _"Team dev vừa onboard"_
+---------------------------------
 
-- Lưu dữ liệu cục bộ bằng `localStorage`.
-- Gợi ý hạng mục chi tiêu dựa trên từ khóa phổ biến.
-- Báo cáo tháng với tổng tiền, số giao dịch và phân bổ theo hạng mục.
-- Phân tích nâng cao (minh họa) gồm OCR hóa đơn và dự đoán chi tiêu tháng tới.
+**Tình huống:**Công ty khởi động dự án quản lý chi tiêu. CTO giao bạn:
 
-## Phát triển thêm
+*   Setup **10 user IAM** cho team dev, phân quyền theo vai trò (dev, lead).
+    
+*   Dựng **EC2** để backend thử nghiệm API nhập chi tiêu.
+    
+*   Dev than phiền: “cho chúng tôi quyền sudo trên EC2 luôn đi”.
+    
 
-- Tích hợp dịch vụ OCR thực tế (ví dụ Tesseract.js) để đọc ảnh hóa đơn.
-- Kết nối mô hình máy học để dự báo ngân sách theo thói quen.
-- Xuất dữ liệu ra CSV hoặc Google Sheets.
-=======
-# AWS Daily Expense Tracker Curriculum
+👉 Học viên phải quyết định phân quyền hợp lý, tránh sai lầm IAM, đồng thời dựng EC2 với SG hợp lý để dev truy cập.
 
-## Tổng quan case study
-Case study "Sổ chi tiêu hàng ngày" giúp học viên xây dựng một ứng dụng serverless trên AWS để ghi nhận, phân tích và báo cáo chi tiêu cá nhân. Mỗi bài học giới thiệu dần các dịch vụ AWS cốt lõi, nhấn mạnh các nguyên tắc bảo mật, khả năng mở rộng và tự động hóa triển khai.
+Buổi 2 – _"DB bị lộ ra internet"_
+---------------------------------
 
-### Mục tiêu học tập chung
-- Thiết lập môi trường AWS tuân thủ nguyên tắc bảo mật và quản trị người dùng.
-- Xây dựng backend serverless để lưu trữ và truy xuất dữ liệu chi tiêu.
-- Triển khai frontend tĩnh kết nối API bảo mật.
-- Bổ sung khả năng xác thực người dùng, giám sát hệ thống, OCR hóa đơn và phân tích dữ liệu.
-- Áp dụng Infrastructure as Code và quy trình CI/CD tự động.
-- Tối ưu bảo mật, chi phí vận hành.
+**Tình huống:**Backend cần database. Một dev tự dựng **RDS MySQL public** để test → sếp phát hiện security risk.
 
-### Đối tượng học viên
-- Developer hoặc sinh viên CNTT mới làm quen AWS.
-- Đội ngũ sản phẩm muốn hiện thực hóa MVP serverless nhanh chóng.
-- Giảng viên cần giáo trình thực hành theo từng bước.
+*   CTO yêu cầu: RDS Aurora phải private subnet, scale khi user tăng.
+    
+*   Thêm **Redis cache** cho báo cáo tháng.
+    
+*   **Route53** cho subdomain api.expense.app.
+    
 
-### Yêu cầu đầu vào
-- Kiến thức cơ bản về lập trình (Python hoặc JavaScript).
-- Tài khoản AWS cá nhân với quyền quản trị.
-- Đã cài đặt AWS CLI, Node.js, Python 3, Git.
+👉 Học viên phải sửa sai của dev, dựng DB trong VPC private, quản lý kết nối an toàn, và giải thích cho team vì sao không expose DB ra ngoài.
 
----
+Buổi 3 – _"Ứng dụng chậm & phí tăng"_
+-------------------------------------
 
-## Lộ trình học
+**Tình huống:**Frontend React build xong, host tạm trên EC2 → user than load chậm, cost tăng.
 
-### 🟢 Phần Cơ Bản (Foundations)
+*   CTO muốn host React trên **S3 + CloudFront** để giảm phí và tăng tốc độ.
+    
+*   Người dùng bắt đầu upload ảnh minh họa cho chi tiêu → cần **S3 bucket với versioning, encryption**.
+    
 
-| Bài | Chủ đề | Mục tiêu chi tiết | Bài tập/Thực hành | Deliverable |
-| --- | ------ | ----------------- | ----------------- | ----------- |
-| 1 | IAM – Thiết lập truy cập | - Tạo IAM User/Role dành cho project<br>- Áp dụng least privilege cho S3, DynamoDB<br>- Kích hoạt MFA cho console access | - Tạo user `expense-app-dev` với policy tùy chỉnh chỉ cho phép `S3:PutObject`, `DynamoDB:PutItem` trên resource demo<br>- Cấu hình AWS CLI với access key của user mới | Tài liệu mô tả user, policy JSON, ảnh chụp MFA hoặc mô tả cấu hình |
-| 2 | S3 – Lưu trữ dữ liệu thô | - Tạo bucket `daily-expense-logs` (đặt region cụ thể)<br>- Bật versioning, encryption SSE-S3<br>- Thử upload file JSON mẫu | - Dùng AWS CLI hoặc Console upload `{ "date": "2025-09-18", "item": "Coffee", "amount": 50 }` vào thư mục `raw/` | Báo cáo bucket settings, screenshot/CLI output upload |
-| 3 | DynamoDB – Dữ liệu có cấu trúc | - Tạo bảng `ExpenseTable` với `PK=userId`, `SK=date`<br>- Định nghĩa TTL optional cho auto archive | - Viết script Python (boto3) hoặc Node.js để thêm một record<br>- Commit script vào repo | Mã nguồn script + kết quả chạy CLI |
-| 4 | API Gateway + Lambda | - Thiết kế REST API `/expense` (POST, GET)<br>- Triển khai Lambda truy xuất DynamoDB | - Tạo Lambda `ExpenseHandler` bằng Python hoặc Node.js<br>- Kiểm tra API bằng Postman/curl | Postman collection hoặc log test, mã nguồn Lambda |
-| 5 | CloudFront + S3 Website | - Deploy frontend tĩnh chứa form nhập chi tiêu<br>- Tích hợp gọi API Gateway endpoint | - Build trang HTML/JS đơn giản, upload lên S3 Static website<br>- Cấu hình CloudFront distribution caching tối thiểu | Link CloudFront, mã nguồn frontend |
+👉 Học viên sẽ deploy React app lên S3 + CloudFront, cấu hình HTTPS bằng ACM, và tối ưu storage lifecycle để tiết kiệm chi phí.
 
-### 🟡 Phần Trung Cấp (Intermediate)
+Buổi 4 – _"DevOps war: Docker hay Serverless?"_
+-----------------------------------------------
 
-| Bài | Chủ đề | Mục tiêu chi tiết | Bài tập/Thực hành | Deliverable |
-| --- | ------ | ----------------- | ----------------- | ----------- |
-| 6 | Cognito – Xác thực người dùng | - Tạo User Pool với flow đăng ký/đăng nhập<br>- Tích hợp API Gateway với Cognito Authorizer | - Cập nhật frontend sử dụng Hosted UI hoặc AWS Amplify Auth<br>- Cập nhật Lambda để lấy `sub` từ claims | Demo đăng nhập, hướng dẫn cấu hình |
-| 7 | CloudWatch – Logging & Monitoring | - Bật Access logging cho API Gateway<br>- Sử dụng CloudWatch Logs & Metrics, tạo Alarm cơ bản | - Tạo Dashboard hiển thị tổng request, 4xx, 5xx, độ trễ<br>- Thiết lập SNS Alarm khi lỗi 5xx vượt ngưỡng | Ảnh dashboard, cấu hình alarm |
-| 8 | S3 + Rekognition – OCR hóa đơn | - Cho phép upload ảnh hóa đơn vào S3 (bucket `daily-expense-receipts`)<br>- Lambda trigger gọi Rekognition `DetectText` | - Viết Lambda phân tích text, chuẩn hóa dữ liệu, lưu vào DynamoDB (mapping userId, date, amount)<br>- Trình bày chiến lược xử lý lỗi | Mã nguồn Lambda OCR, ví dụ dữ liệu OCR |
-| 9 | Athena + QuickSight – Báo cáo | - Dùng Glue Crawler/Job ETL dữ liệu từ DynamoDB sang S3 (parquet)<br>- Dùng Athena query phân tích chi tiêu theo tháng/category | - Viết query mẫu (SUM amount, GROUP BY month/category)<br>- Tạo Dashboard QuickSight với biểu đồ cột & doughnut | File SQL, ảnh dashboard |
+**Tình huống:**Team backend cãi nhau:
 
-### 🔴 Phần Nâng Cao (Advanced)
+*   Nhóm A: “Dùng **ECS Fargate**, dễ deploy microservice.”
+    
+*   Nhóm B: “Dùng **Lambda + API Gateway**, serverless mới xịn.”
+    
+*   CTO bảo: “Dựng cả 2 để so sánh.”
+    
 
-| Bài | Chủ đề | Mục tiêu chi tiết | Bài tập/Thực hành | Deliverable |
-| --- | ------ | ----------------- | ----------------- | ----------- |
-| 10 | Infrastructure as Code | - Sử dụng AWS CDK (TypeScript) hoặc Terraform để định nghĩa toàn bộ stack<br>- Bao gồm S3, DynamoDB, Lambda, API Gateway, Cognito | - Tổ chức project IaC nhiều stack/layer<br>- Viết hướng dẫn deploy (`cdk deploy` hoặc `terraform apply`) | Repo IaC, tài liệu triển khai |
-| 11 | CI/CD với CodePipeline | - Thiết lập pipeline: Source (GitHub) → Build (CodeBuild) → Deploy (CDK & frontend)<br>- Bật manual approval cho môi trường Prod | - Viết buildspec cho backend & frontend<br>- Tạo stage dev/prod riêng | Sơ đồ pipeline, file cấu hình buildspec |
-| 12 | Bảo mật & Tối ưu chi phí | - Mã hóa dữ liệu nhạy cảm bằng KMS CMK<br>- Bật AWS Config rules, GuardDuty<br>- Thiết lập AWS Budgets cảnh báo chi phí | - Triển khai policy hạn chế truy cập dữ liệu nhạy cảm<br>- Demo GuardDuty finding, thiết lập budget alert email | Tài liệu security runbook, ảnh Budget alert |
+👉 Học viên sẽ deploy một service backend bằng ECS Fargate + ECR, và một service khác bằng Lambda + API Gateway. So sánh chi phí, scaling, latency.
 
----
+Buổi 5 – _"Dev push code lỗi"_
+------------------------------
 
-## Kế hoạch giảng dạy đề xuất
+**Tình huống:**Một dev push code hỏng → EC2 production crash. CTO mắng: “Tại sao chưa có CI/CD pipeline?”
 
-### Tuần 1: Kiến trúc và nền tảng
-- **Buổi 1:** Giới thiệu case study, Bài 1 (IAM) – thực hành tạo user và policy.
-- **Buổi 2:** Bài 2 (S3) + Bài 3 (DynamoDB) – lưu dữ liệu thô và cấu trúc.
-- **Buổi 3:** Bài 4 (API Gateway + Lambda) – xây dựng API CRUD cơ bản.
+*   Yêu cầu: Tạo pipeline **CodeCommit → CodeBuild → CodeDeploy → ECS**.
+    
+*   Hạ tầng phải IaC (**CloudFormation/CDK**).
+    
 
-### Tuần 2: Frontend và xác thực
-- **Buổi 4:** Bài 5 (CloudFront + S3 Website) – publish frontend, test end-to-end.
-- **Buổi 5:** Bài 6 (Cognito) – tích hợp xác thực, cập nhật API bảo vệ endpoint.
-- **Buổi 6:** Bài 7 (CloudWatch) – theo dõi, logging, tạo dashboard.
+👉 Học viên sẽ dựng CI/CD pipeline, tự động build & deploy, rollback khi lỗi. Sau đó demo pipeline chạy end-to-end.
 
-### Tuần 3: Tích hợp AI và phân tích dữ liệu
-- **Buổi 7:** Bài 8 (Rekognition OCR) – pipeline xử lý hóa đơn.
-- **Buổi 8:** Bài 9 (Athena + QuickSight) – xây dựng báo cáo trực quan.
+Buổi 6 – _"Khách hàng báo app chậm"_
+------------------------------------
 
-### Tuần 4: Vận hành doanh nghiệp
-- **Buổi 9:** Bài 10 (IaC) – CDK/Terraform, quản lý cấu hình.
-- **Buổi 10:** Bài 11 (CI/CD) – thiết lập pipeline tự động.
-- **Buổi 11:** Bài 12 (Security & Cost) – bảo mật toàn diện, tối ưu chi phí.
-- **Buổi 12:** Ôn tập và tổng kết, chuẩn bị đánh giá cuối khóa.
+**Tình huống:**User báo app load chậm vào cuối tháng. CTO bảo: “Phải có monitoring và alert.”
 
----
+*   Thu thập log từ ECS + Lambda.
+    
+*   Tạo **dashboard CloudWatch** để xem traffic, DB CPU, error rate.
+    
+*   Cảnh báo khi chi tiêu vượt ngưỡng qua **SNS email**.
+    
+*   Thêm **Cognito** để user có thể login bằng Google.
+    
 
-## Tài nguyên và tài liệu tham khảo
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [AWS Serverless Land](https://serverlessland.com/)
-- [AWS Workshops](https://workshops.aws/)
-- [AWS Skill Builder](https://skillbuilder.aws/)
-- [AWS Samples trên GitHub](https://github.com/aws-samples)
+👉 Học viên dựng monitoring thực chiến, tạo alarm → SNS email, và tích hợp login OAuth2.
 
-## Đánh giá cuối khóa
-- **Project cuối khóa:** Hoàn thiện ứng dụng Expense Tracker với đầy đủ pipeline CI/CD, dashboard, bảo mật.
-- **Tiêu chí:**
-  - Đáp ứng yêu cầu kỹ thuật từng bài.
-  - Tài liệu triển khai rõ ràng, repo có README chi tiết.
-  - Báo cáo nêu bật bài học về bảo mật, tối ưu chi phí.
+Buổi 7 – _"Audit & Compliance"_
+-------------------------------
 
----
+**Tình huống:**Công ty chuẩn bị gọi vốn, auditor yêu cầu:
 
-## Gợi ý mở rộng sau khóa học
-- Tích hợp Amazon Forecast để dự đoán chi tiêu tương lai.
-- Dùng Step Functions orchestration cho pipeline nhập liệu phức tạp.
-- Triển khai multi-account strategy với AWS Organizations.
-- Xây dựng mobile app sử dụng AWS Amplify hoặc Flutter + Amplify.
+*   Mọi secret (DB password) phải lưu trong **Secrets Manager**.
+    
+*   Dữ liệu tài chính phải mã hóa bằng **KMS**.
+    
+*   Cấu hình workflow báo cáo tháng bằng **Step Functions**.
+    
+
+👉 Học viên chuyển secrets ra khỏi code, cấu hình KMS cho S3 + RDS, và build Step Function pipeline để generate monthly report.
+
+Buổi 8 – _"Investor Demo Day"_
+------------------------------
+
+**Tình huống:**Ngày demo cho nhà đầu tư:
+
+*   CTO muốn trình bày toàn kiến trúc hệ thống.
+    
+*   Phải chứng minh hệ thống **scale tốt, bảo mật tốt, cost hợp lý**.
+    
+*   CEO bất ngờ hỏi: “Nếu user tăng gấp 10 thì chi phí ra sao?”
+    
+
+👉 Học viên sẽ dựng sơ đồ kiến trúc tổng thể, chạy thử load test, dùng **Cost Explorer** để dự đoán chi phí, và trả lời câu hỏi của nhà đầu tư.
+
+💡 Ý nghĩa
+----------
+
+*   Mỗi buổi = một “drama” mà Cloud Engineer phải xử lý.
+    
+*   Người học thấy ngay ý nghĩa thực tế → không khô khan.
+    
+*   Tất cả dịch vụ AWS đều gắn liền với **ứng dụng chi tiêu**.
+    
+
+🏗️ Kiến trúc hệ thống (Mermaid Diagram)
+========================================
+
+flowchart TB
+    subgraph Client["Người dùng"]
+        browser["React App (Browser)"]
+    end
+
+    subgraph AWS["AWS Cloud"]
+        subgraph Network["Networking & Security"]
+            route53["Route53 (DNS)"]
+            alb["ALB / CloudFront"]
+            vpc["VPC (2 Public + 2 Private Subnets)"]
+        end
+
+        subgraph Frontend["Frontend Hosting"]
+            s3_static["S3 (React App)"]
+            cloudfront["CloudFront CDN + ACM Cert"]
+        end
+
+        subgraph Backend["Backend Services"]
+            ecs["ECS Fargate (API Service)"]
+            lambda["Lambda (Monthly Report)"]
+            apigw["API Gateway"]
+        end
+
+        subgraph Database["Data Layer"]
+            aurora["Aurora MySQL (Chi tiêu)"]
+            redis["ElastiCache Redis (Cache báo cáo)"]
+        end
+
+        subgraph Auth["Authentication"]
+            cognito["Cognito (Login with Google)"]
+        end
+
+        subgraph Monitoring["Monitoring & Events"]
+            cloudwatch["CloudWatch Logs & Metrics"]
+            sns["SNS (Email Alerts)"]
+            eventbridge["EventBridge Rules"]
+        end
+
+        subgraph Secrets["Security"]
+            secrets["Secrets Manager (DB Creds)"]
+            kms["KMS (Data Encryption)"]
+        end
+
+        subgraph CICD["CI/CD Pipeline"]
+            codecommit["CodeCommit (Repo)"]
+            codebuild["CodeBuild"]
+            codedeploy["CodeDeploy"]
+            codepipeline["CodePipeline"]
+        end
+    end
+
+    browser --> route53 --> cloudfront --> s3_static
+    cloudfront --> ecs
+    browser --> apigw --> ecs
+    ecs --> aurora
+    ecs --> redis
+    apigw --> lambda --> aurora
+
+    cognito --> browser
+    cognito --> apigw
+
+    ecs --> cloudwatch
+    lambda --> cloudwatch
+    cloudwatch --> sns
+    eventbridge --> sns
+
+    secrets --> ecs
+    kms --> aurora
+    kms --> s3_static
+
+    codecommit --> codebuild --> codedeploy --> ecs
+    codecommit --> codebuild --> codedeploy --> lambda
+    codepipeline --> codebuild
+
+
+🎯 Tóm tắt kiến trúc
+--------------------
+
+*   **Frontend**: React build → S3 → CloudFront phân phối toàn cầu.
+    
+*   **Backend**: ECS Fargate chạy API, Lambda xử lý báo cáo tháng.
+    
+*   **Database**: Aurora MySQL chính, Redis tăng tốc báo cáo.
+    
+*   **Auth**: Cognito cho login bằng Google.
+    
+*   **CI/CD**: Mỗi commit → CodePipeline build & deploy ra ECS/Lambda.
+    
+*   **Monitoring**: CloudWatch theo dõi, SNS gửi cảnh báo email khi vượt ngưỡng.
+    
+*   **Security**: Secrets Manager quản lý DB password, KMS mã hóa dữ liệu.
